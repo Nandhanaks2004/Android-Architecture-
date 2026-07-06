@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3 — Android Architecture Deep Dive | Android Fundamentals</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0B0F19;--bg2:#0F1629;--bg3:#141B2D;--bg4:#1A2340;--card:#141B2D;--card2:#1A2340;--card3:#1E2950;--border:#1E2D50;--border2:#2A3A60;--text:#E8EAF0;--text2:#A0A8C0;--text3:#6B7394;--accent:#00D4FF;--accent2:#0099FF;--accent3:#0066CC;--grad1:linear-gradient(135deg,#00D4FF,#0099FF);--grad2:linear-gradient(135deg,#00FF88,#00D4FF);--grad3:linear-gradient(135deg,#8B5CF6,#EC4899);--grad4:linear-gradient(135deg,#F59E0B,#EF4444);--green:#00FF88;--red:#FF4466;--yellow:#FFD700;--orange:#FF8C00;--purple:#8B5CF6;--pink:#EC4899;--radius:12px;--radius2:16px;--shadow:0 4px 24px rgba(0,0,0,0.3);--shadow2:0 8px 48px rgba(0,0,0,0.4)}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(11,15,25,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.1rem;font-weight:700;background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-logo span{color:var(--text3);-webkit-text-fill-color:var(--text3);font-weight:400;margin-left:.5rem;font-size:.85rem}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--accent)}
+.nav-hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer}
+.nav-mobile{display:none;position:fixed;top:64px;left:0;right:0;bottom:0;background:rgba(11,15,25,0.98);backdrop-filter:blur(20px);padding:2rem;flex-direction:column;gap:1.5rem;overflow-y:auto}
+.nav-mobile.open{display:flex}
+.nav-mobile a{color:var(--text2);text-decoration:none;font-size:1rem;font-weight:500;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 50%,rgba(139,92,246,0.08) 0%,transparent 50%),radial-gradient(circle at 70% 30%,rgba(0,212,255,0.06) 0%,transparent 50%);animation:heroBg 20s ease-in-out infinite}
+@keyframes heroBg{0%,100%{transform:translate(0,0)}50%{transform:translate(-2%,1%)}}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:1.5rem;position:relative}
+.hero h1 .grad{background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.2rem;color:var(--text2);max-width:700px;margin:0 auto 2rem;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:.5rem 1.2rem;font-size:.85rem;color:var(--purple);margin-bottom:2rem;position:relative}
+.hero-btns{display:flex;gap:1rem;justify-content:center;position:relative}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 2rem;border-radius:var(--radius);font-size:.95rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all .3s}
+.btn-primary{background:var(--grad3);color:#fff;box-shadow:0 4px 20px rgba(139,92,246,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(139,92,246,0.4)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.section{padding:6rem 2rem;max-width:1200px;margin:0 auto}
+.section-label{display:inline-flex;align-items:center;gap:.5rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:999px;padding:.4rem 1rem;font-size:.8rem;font-weight:600;color:var(--purple);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em}
+.section h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:1rem;line-height:1.2}
+.section h2 .grad{background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section h3{font-size:1.5rem;font-weight:700;margin:2.5rem 0 1rem;color:var(--text)}
+.section h4{font-size:1.15rem;font-weight:600;margin:1.5rem 0 .75rem;color:var(--accent)}
+.section>p{color:var(--text2);font-size:1.05rem;max-width:800px;margin-bottom:1.5rem}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:4rem 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;transition:all .3s}
+.card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem;margin:1.5rem 0}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin:1.5rem 0}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1.5rem 0}
+.card .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1rem;background:rgba(139,92,246,0.1)}
+.card h4{margin-top:0;color:var(--text)}
+.card p,.card li{color:var(--text2);font-size:.95rem}
+.card ul{list-style:none;padding:0;margin:.5rem 0 0}
+.card ul li{padding:.3rem 0;padding-left:1.2rem;position:relative}
+.card ul li::before{content:'\25B8';position:absolute;left:0;color:var(--purple)}
+.box{border-radius:var(--radius);padding:1.25rem 1.5rem;margin:1rem 0;font-size:.95rem;border:1px solid}
+.box-blue{background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.2);color:var(--accent)}
+.box-green{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.2);color:var(--green)}
+.box-red{background:rgba(255,68,102,0.06);border-color:rgba(255,68,102,0.2);color:var(--red)}
+.box-yellow{background:rgba(255,215,0,0.06);border-color:rgba(255,215,0,0.2);color:var(--yellow)}
+.box-purple{background:rgba(139,92,246,0.06);border-color:rgba(139,92,246,0.2);color:var(--purple)}
+.box-title{font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:1.6;margin:1rem 0;color:var(--text2);position:relative}
+pre .cmd{color:var(--green)}
+pre .flag{color:var(--accent)}
+pre .path{color:var(--yellow)}
+pre .comment{color:var(--text3);font-style:italic}
+code{font-family:'JetBrains Mono',monospace;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:.15rem .4rem;font-size:.85rem;color:var(--accent)}
+pre code{background:none;border:none;padding:0}
+.fc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;margin:1.5rem 0;display:flex;flex-direction:column;align-items:center;gap:1rem;overflow-x:auto}
+.fc-title{font-weight:700;color:var(--text);font-size:1rem;margin-bottom:.5rem}
+.fc-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;justify-content:center}
+.fc-box{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem 1.2rem;font-size:.85rem;font-weight:500;text-align:center;min-width:100px;transition:all .3s}
+.fc-box:hover{border-color:var(--accent);transform:translateY(-2px)}
+.fc-box.highlight{border-color:var(--accent);background:rgba(0,212,255,0.1)}
+.fc-box.red{border-color:var(--red);background:rgba(255,68,102,0.1)}
+.fc-box.green{border-color:var(--green);background:rgba(0,255,136,0.1)}
+.fc-box.yellow{border-color:var(--yellow);background:rgba(255,215,0,0.1)}
+.fc-box.purple{border-color:var(--purple);background:rgba(139,92,246,0.1)}
+.fc-arrow{color:var(--text3);font-size:1.2rem;flex-shrink:0}
+.fc-arrow-down{color:var(--text3);font-size:1.2rem}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}
+.tab-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem 1.2rem;font-size:.85rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;font-family:inherit}
+.tab-btn:hover{border-color:var(--border2);color:var(--text)}
+.tab-btn.active{background:rgba(139,92,246,0.1);border-color:var(--purple);color:var(--purple)}
+.tab-content{display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin:.5rem 0 1.5rem;animation:fadeIn .3s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sim{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;margin:1.5rem 0}
+.sim-title{font-weight:700;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.sim-title .icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,0.15);font-size:1rem}
+.sim-steps{display:flex;flex-direction:column;gap:.75rem}
+.sim-step{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:1rem;font-size:.9rem;transition:all .3s;opacity:0.3}
+.sim-step.active{opacity:1;border-color:var(--purple);background:rgba(139,92,246,0.05)}
+.sim-step .num{width:28px;height:28px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;color:var(--text3)}
+.sim-step.active .num{border-color:var(--purple);color:var(--purple);background:rgba(139,92,246,0.1)}
+.sim-step .txt{flex:1}
+.sim-step .txt strong{color:var(--text);font-weight:600}
+.sim-step .txt span{color:var(--text2)}
+.sim-controls{display:flex;gap:.75rem;margin-top:1.25rem}
+.sim-btn{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);padding:.5rem 1.2rem;font-size:.85rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;font-family:inherit}
+.sim-btn:hover{border-color:var(--purple);color:var(--purple)}
+.table-wrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--border);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--bg3);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.03em;color:var(--text2);text-align:left;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+td{padding:.75rem 1rem;border-bottom:1px solid var(--border);font-size:.9rem;color:var(--text2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(139,92,246,0.03)}
+.quiz{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;margin:1.5rem 0}
+.quiz h4{margin-top:0;color:var(--text);margin-bottom:1rem}
+.quiz-q{margin-bottom:1.5rem}
+.quiz-q p{font-weight:600;color:var(--text);margin-bottom:.75rem;font-size:.95rem}
+.quiz-opts{display:flex;flex-direction:column;gap:.5rem}
+.quiz-opt{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem 1rem;cursor:pointer;font-size:.9rem;color:var(--text2);transition:all .2s;display:flex;align-items:center;gap:.75rem}
+.quiz-opt:hover{border-color:var(--border2);color:var(--text)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(0,255,136,0.08);color:var(--green)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(255,68,102,0.08);color:var(--red)}
+.quiz-opt .letter{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;flex-shrink:0}
+.quiz-opt.correct .letter{border-color:var(--green);background:rgba(0,255,136,0.15)}
+.quiz-opt.wrong .letter{border-color:var(--red);background:rgba(255,68,102,0.15)}
+.quiz-explain{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-top:.75rem;font-size:.9rem;color:var(--text2);display:none}
+.quiz-explain.show{display:block}
+.quiz-explain strong{color:var(--green)}
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin:1.5rem 0}
+.fcard{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);height:200px;perspective:1000px;cursor:pointer}
+.fcard-in{width:100%;height:100%;position:relative;transition:transform .5s;transform-style:preserve-3d}
+.fcard.flipped .fcard-in{transform:rotateY(180deg)}
+.fcard-f,.fcard-b{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
+.fcard-f{background:var(--card);border:1px solid var(--border)}
+.fcard-f h4{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:.5rem}
+.fcard-f p{font-size:.85rem;color:var(--text3)}
+.fcard-b{background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(0,212,255,0.1));border:1px solid rgba(139,92,246,0.3);transform:rotateY(180deg)}
+.fcard-b p{font-size:.9rem;color:var(--text2);line-height:1.5}
+.fcard-b strong{color:var(--purple)}
+.pent{background:linear-gradient(135deg,rgba(255,68,102,0.08),rgba(255,140,0,0.05));border:1px solid rgba(255,68,102,0.2);border-radius:var(--radius2);padding:1.5rem;margin:1.5rem 0}
+.pent .pent-title{font-weight:700;color:var(--red);font-size:1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.pent p,.pent li{color:var(--text2);font-size:.95rem}
+.pent ul{list-style:none;padding:0;margin:.5rem 0 0}
+.pent ul li{padding:.3rem 0;padding-left:1.2rem;position:relative}
+.pent ul li::before{content:'\26A1';position:absolute;left:0;font-size:.8rem}
+.lab{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;margin:1.5rem 0}
+.lab .lab-num{display:inline-block;background:var(--grad3);color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .8rem;border-radius:999px;margin-bottom:.75rem;text-transform:uppercase}
+.lab h4{margin-top:0;color:var(--text);font-size:1.1rem;margin-bottom:.75rem}
+.lab-steps{counter-reset:lab-step}
+.lab-step{counter-increment:lab-step;display:flex;gap:1rem;padding:.6rem 0;font-size:.9rem;color:var(--text2);border-bottom:1px solid var(--border)}
+.lab-step:last-child{border-bottom:none}
+.lab-step::before{content:counter(lab-step);width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;color:var(--purple)}
+.lab-tip{background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:var(--radius);padding:.75rem 1rem;margin-top:.75rem;font-size:.85rem;color:var(--purple)}
+.takeaway{background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(0,153,255,0.05));border:1px solid rgba(139,92,246,0.2);border-radius:var(--radius2);padding:2rem;margin:2rem 0}
+.takeaway h4{color:var(--purple);margin-top:0;margin-bottom:1rem;font-size:1.1rem}
+.takeaway-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.takeaway-item{display:flex;gap:.75rem;align-items:flex-start}
+.takeaway-item .icon{font-size:1.2rem;flex-shrink:0;margin-top:.1rem}
+.takeaway-item .txt strong{display:block;color:var(--text);margin-bottom:.2rem}
+.takeaway-item .txt span{color:var(--text2);font-size:.9rem}
+.ai{opacity:0;transform:translateY(20px);transition:all .6s cubic-bezier(.4,0,.2,1)}
+.ai.vis{opacity:1;transform:translateY(0)}
+.tag{display:inline-block;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:999px;padding:.2rem .7rem;font-size:.75rem;font-weight:600;color:var(--purple)}
+.tag-green{background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.2);color:var(--green)}
+.tag-red{background:rgba(255,68,102,0.1);border-color:rgba(255,68,102,0.2);color:var(--red)}
+.tag-yellow{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.2);color:var(--yellow)}
+.tag-blue{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.2);color:var(--accent)}
+.toc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:2rem;margin:2rem 0}
+.toc h3{margin-top:0;color:var(--text)}
+.toc ol{padding-left:1.5rem;color:var(--text2)}
+.toc ol li{padding:.3rem 0}
+.toc ol li a{color:var(--text2);text-decoration:none;transition:color .2s}
+.toc ol li a:hover{color:var(--purple)}
+.toc ol ol{padding-left:1.5rem;margin-top:.25rem}
+.stats-row{display:flex;gap:1rem;flex-wrap:wrap;margin:1.5rem 0}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;flex:1;min-width:140px}
+.stat-card .num{font-size:2rem;font-weight:800;background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .lbl{font-size:.8rem;color:var(--text3);margin-top:.25rem}
+.miscon{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1.5rem;margin:1rem 0}
+.miscon h5{color:var(--red);font-size:.95rem;margin-bottom:.5rem}
+.miscon .wrong{color:var(--red);font-size:.85rem;margin-bottom:.25rem}
+.miscon .correct{color:var(--green);font-size:.85rem}
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin:1.5rem 0}
+.compare-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1.5rem}
+.compare-card h5{margin-top:0;color:var(--text);margin-bottom:.75rem;font-size:1rem}
+.compare-card ul{list-style:none;padding:0}
+.compare-card ul li{padding:.3rem 0;color:var(--text2);font-size:.9rem;padding-left:1rem;position:relative}
+.compare-card ul li::before{content:'\25B8';position:absolute;left:0;color:var(--purple)}
+@media(max-width:768px){.nav-links{display:none}.nav-hamburger{display:block}.section{padding:4rem 1.25rem}.grid2,.grid3,.grid4{grid-template-columns:1fr}.fc-row{flex-direction:column;align-items:center}.hero h1{font-size:2.2rem}}
+</style>
+</head>
+<body>
+<noscript><style>.ai{opacity:1!important;transform:none!important}</style></noscript>
+<nav class="nav">
+<div class="nav-logo">Android Fundamentals<span>Module 3</span></div>
+<div class="nav-links">
+<a href="#arch-layers">Layers</a>
+<a href="#runtime">Runtime</a>
+<a href="#binder">Binder</a>
+<a href="#security">Security</a>
+<a href="#labs">Labs</a>
+<a href="android-internals.html">&larr; Module 2</a>
+<a href="android-fundamentals.html">Module 1</a>
+</div>
+<button class="nav-hamburger" onclick="document.querySelector('.nav-mobile').classList.toggle('open')">&#9776;</button>
+</nav>
+<div class="nav-mobile">
+<a href="#arch-layers" onclick="this.parentElement.classList.remove('open')">Architecture Layers</a>
+<a href="#runtime" onclick="this.parentElement.classList.remove('open')">Runtime Deep Dive</a>
+<a href="#binder" onclick="this.parentElement.classList.remove('open')">Binder IPC</a>
+<a href="#security" onclick="this.parentElement.classList.remove('open')">Security Perspective</a>
+<a href="#labs" onclick="this.parentElement.classList.remove('open')">Labs</a>
+<a href="android-internals.html">&larr; Module 2</a>
+<a href="android-fundamentals.html">Module 1</a>
+</div>
+
+<section class="hero">
+<div>
+<div class="hero-badge">&#128295; MODULE 3 &mdash; ANDROID ARCHITECTURE DEEP DIVE</div>
+<h1><span class="grad">Under the Hood</span><br>of Android Architecture</h1>
+<p>Master the complete Android architecture stack &mdash; from Linux Kernel through HAL, Native Libraries, ART, Framework, to Applications. Understand how every layer communicates and where security boundaries exist.</p>
+<div class="hero-btns">
+<a href="#arch-layers" class="btn btn-primary">Start Learning &rarr;</a>
+<a href="android-internals.html" class="btn btn-outline">&larr; Module 2</a>
+<a href="android-fundamentals.html" class="btn btn-outline">Module 1</a>
+</div>
+</div>
+</section>
+
+<!-- INTERACTIVE ARCHITECTURE EXPLORER -->
+<section class="section" id="arch-explorer">
+<div class="section-label ai">&#128295; Architecture Explorer</div>
+<h2 class="ai">Interactive <span class="grad">Architecture</span> Stack</h2>
+<p class="ai">Click any layer to explore its responsibilities, security role, and attack surface.</p>
+<div class="fc ai" id="arch-stack">
+<div class="fc-row"><div class="fc-box highlight" onclick="showArchLayer('apps')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Applications</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple" onclick="showArchLayer('framework')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Android Framework</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box" onclick="showArchLayer('art')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem;border-color:var(--accent)">Android Runtime (ART)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green" onclick="showArchLayer('native')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Native Libraries</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow" onclick="showArchLayer('hal')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Hardware Abstraction Layer</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red" onclick="showArchLayer('kernel')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Linux Kernel</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box" onclick="showArchLayer('hardware')" style="cursor:pointer;min-width:200px;padding:1rem 2rem;font-size:1rem">Hardware</div></div>
+</div>
+<div id="arch-detail" class="card ai" style="display:none;margin-top:1.5rem">
+<div id="arch-detail-content"></div>
+</div>
+</section>
+
+<!-- TOC -->
+<div class="section">
+<div class="toc ai">
+<h3>&#128209; Table of Contents</h3>
+<ol>
+<li><a href="#arch-layers">Why Android Architecture Matters</a></li>
+<li><a href="#arch-layers2">Architecture Layers</a>
+<ol>
+<li><a href="#layer-kernel">Linux Kernel</a></li>
+<li><a href="#layer-hal">Hardware Abstraction Layer (HAL)</a></li>
+<li><a href="#layer-native">Native Libraries</a></li>
+<li><a href="#layer-art">Android Runtime (ART)</a></li>
+</ol>
+</li>
+<li><a href="#runtime">Runtime Deep Dive</a>
+<ol>
+<li><a href="#runtime-env">What is a Runtime Environment?</a></li>
+<li><a href="#jvm">Java Virtual Machine (JVM)</a></li>
+<li><a href="#dalvik">Dalvik Virtual Machine (DVM)</a></li>
+<li><a href="#art-deep">ART &mdash; Deep Dive</a></li>
+<li><a href="#dex">DEX Files</a></li>
+<li><a href="#gc">Garbage Collection &amp; Memory</a></li>
+<li><a href="#runtime-security">Runtime Security &amp; Hooking</a></li>
+</ol>
+</li>
+<li><a href="#binder">Binder IPC</a>
+<ol>
+<li><a href="#ipc-why">Why IPC is Needed</a></li>
+<li><a href="#binder-what">What is Binder?</a></li>
+<li><a href="#binder-arch">Binder Architecture</a></li>
+<li><a href="#binder-flow">Communication Flow &amp; Service Manager</a></li>
+</ol>
+</li>
+<li><a href="#security">Security Perspective</a></li>
+</ol>
+</div>
+<div class="stats-row ai">
+<div class="stat-card"><div class="num">5</div><div class="lbl">Major Topics</div></div>
+<div class="stat-card"><div class="num">17</div><div class="lbl">Sub-Topics</div></div>
+<div class="stat-card"><div class="num">6</div><div class="lbl">Simulations</div></div>
+<div class="stat-card"><div class="num">12</div><div class="lbl">Quizzes</div></div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 3.1: WHY ARCHITECTURE MATTERS -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="arch-layers">
+<div class="section-label ai">&#128295; Section 3.1</div>
+<h2 class="ai">Why Android <span class="grad">Architecture</span> Matters</h2>
+<p class="ai">Android is a carefully designed software stack where every layer has a specific responsibility. Instead of allowing apps to communicate directly with hardware, Android routes every request through multiple controlled layers.</p>
+
+<h3 class="ai">What is Android Architecture?</h3>
+<p class="ai">Android Architecture is the layered design that defines how all components of the operating system work together. Each layer communicates only with adjacent layers through well-defined interfaces.</p>
+
+<div class="fc ai">
+<div class="fc-title">Android Architecture Stack</div>
+<div class="fc-row"><div class="fc-box highlight">Applications</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Android Framework</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Android Runtime (ART)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Native Libraries</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow">Hardware Abstraction Layer (HAL)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Linux Kernel</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Hardware</div></div>
+</div>
+
+<h3 class="ai">Real World Analogy &mdash; A Restaurant</h3>
+<div class="compare ai">
+<div class="compare-card">
+<h5>&#127860; Restaurant</h5>
+<ul>
+<li>Customer</li>
+<li>Waiter</li>
+<li>Kitchen Management</li>
+<li>Chef</li>
+<li>Kitchen Equipment</li>
+<li>Gas Stove</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>&#128241; Android</h5>
+<ul>
+<li>User</li>
+<li>Android App</li>
+<li>Android Framework</li>
+<li>Android Runtime</li>
+<li>Native Libraries + HAL</li>
+<li>Linux Kernel + Hardware</li>
+</ul>
+</div>
+</div>
+
+<div class="box box-yellow ai">
+<div class="box-title">&#9888;&#65039; Why Apps Can't Access Hardware Directly</div>
+<p>If every app could control hardware directly, a malicious app could: turn on the camera without permission, record audio silently, read fingerprint data, disable Wi-Fi, or crash the device. Android introduces controlled layers where each request is verified before reaching hardware.</p>
+</div>
+
+<div class="sim ai">
+<div class="sim-title"><span class="icon">&#128247;</span> Simulation: Taking a Photo (End-to-End)</div>
+<div class="sim-steps" id="sim-camera">
+<div class="sim-step active"><div class="num">1</div><div class="txt"><strong>Application Layer:</strong> <span>User taps Capture in Camera app. The app receives the request but does NOT communicate directly with hardware.</span></div></div>
+<div class="sim-step"><div class="num">2</div><div class="txt"><strong>Framework:</strong> <span>Camera app calls <code>cameraManager.openCamera()</code>. Framework checks permissions, finds the camera service, verifies access rights.</span></div></div>
+<div class="sim-step"><div class="num">3</div><div class="txt"><strong>ART Runtime:</strong> <span>Java/Kotlin code executes inside ART. ART manages memory, objects, garbage collection, and application isolation.</span></div></div>
+<div class="sim-step"><div class="num">4</div><div class="txt"><strong>Native Libraries:</strong> <span>Framework calls optimized C/C++ libraries for camera image processing. Performance-critical operations delegated to native code.</span></div></div>
+<div class="sim-step"><div class="num">5</div><div class="txt"><strong>HAL:</strong> <span>Camera HAL translates generic request into hardware-specific instructions. Same API works on Samsung, Pixel, Xiaomi, OnePlus.</span></div></div>
+<div class="sim-step"><div class="num">6</div><div class="txt"><strong>Linux Kernel:</strong> <span>Kernel communicates with camera driver. Allocates memory, controls device I/O, ensures only authorized requests reach hardware.</span></div></div>
+<div class="sim-step"><div class="num">7</div><div class="txt"><strong>Hardware:</strong> <span>Camera sensor captures the image. Image travels back through the same layers to the application.</span></div></div>
+</div>
+<div class="sim-controls">
+<button class="sim-btn" onclick="simPrev('sim-camera')">&larr; Prev</button>
+<button class="sim-btn" onclick="simNext('sim-camera')">Next &rarr;</button>
+<button class="sim-btn" onclick="simReset('sim-camera')">Reset</button>
+</div>
+</div>
+
+<h3 class="ai">Layered Security Model</h3>
+<div class="fc ai">
+<div class="fc-title">Security Checkpoints</div>
+<div class="fc-row"><div class="fc-box highlight">Application</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Permission Check</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Framework Validation</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Runtime Isolation</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow">HAL Interface</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Kernel Access Control</div></div>
+</div>
+
+<h3 class="ai">Architecture and Security &mdash; Attack Surfaces</h3>
+<div class="table-wrap ai">
+<table>
+<thead><tr><th>Attack</th><th>Target Layer</th></tr></thead>
+<tbody>
+<tr><td>Exported Activity Abuse</td><td>Android Framework</td></tr>
+<tr><td>Intent Injection</td><td>Android Framework</td></tr>
+<tr><td>Frida Hooking</td><td>Android Runtime (ART)</td></tr>
+<tr><td>Native Buffer Overflow</td><td>Native Libraries</td></tr>
+<tr><td>Camera HAL Vulnerability</td><td>HAL</td></tr>
+<tr><td>Kernel Privilege Escalation</td><td>Linux Kernel</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="miscon ai">
+<h5>Common Misconceptions</h5>
+<div class="wrong">&#10060; Apps communicate directly with hardware.</div>
+<div class="correct">&#9989; Apps must pass through multiple Android layers before reaching hardware.</div>
+</div>
+<div class="miscon ai">
+<div class="wrong">&#10060; The Framework and Runtime are the same.</div>
+<div class="correct">&#9989; Framework provides APIs and system services. Runtime executes the application's code.</div>
+</div>
+<div class="miscon ai">
+<div class="wrong">&#10060; Security exists only in the Linux Kernel.</div>
+<div class="correct">&#9989; Security is implemented across every layer of the architecture.</div>
+</div>
+
+<div class="takeaway ai">
+<h4>&#127919; Key Takeaways</h4>
+<div class="takeaway-grid">
+<div class="takeaway-item"><div class="icon">&#128295;</div><div class="txt"><strong>Layered Architecture</strong><span>Separates responsibilities. Each layer performs a specific function.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128274;</div><div class="txt"><strong>No Direct Hardware Access</strong><span>Apps never communicate directly with hardware. Every request passes through controlled layers.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128737;&#65039;</div><div class="txt"><strong>Defense in Depth</strong><span>Each layer enforces security controls. Compromising one layer doesn't compromise everything.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128270;</div><div class="txt"><strong>Every Vulnerability Targets a Layer</strong><span>Understanding architecture helps identify where security boundaries exist and where they fail.</span></div></div>
+</div>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 3.2: ARCHITECTURE LAYERS -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="arch-layers2">
+<div class="section-label ai">&#128295; Section 3.2</div>
+<h2 class="ai">Architecture <span class="grad">Layers</span></h2>
+<p class="ai">Each layer of the Android architecture has specific responsibilities. Understanding each layer is essential for both development and security research.</p>
+
+<!-- 3.2.1 Linux Kernel -->
+<h3 class="ai" id="layer-kernel">3.2.1 &mdash; Linux Kernel</h3>
+<p class="ai">The Linux Kernel is the foundation of Android. Without it, Android cannot boot, applications cannot run, hardware cannot be accessed, and security cannot be enforced.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128039;</div>
+<h4>Kernel Responsibilities</h4>
+<ul>
+<li><strong>Process Management</strong> &mdash; Creates processes, assigns PIDs, schedules CPU time</li>
+<li><strong>Memory Management</strong> &mdash; Allocation, release, virtual memory, process isolation</li>
+<li><strong>Device Drivers</strong> &mdash; Camera, Display, Touchscreen, Bluetooth, Wi-Fi, USB</li>
+<li><strong>File System</strong> &mdash; Manages storage operations for apps</li>
+<li><strong>Security</strong> &mdash; UIDs, process isolation, Linux permissions, SELinux</li>
+<li><strong>Power Management</strong> &mdash; CPU frequency, sleep mode, battery optimization</li>
+<li><strong>Networking</strong> &mdash; Internet access through Linux networking stack</li>
+<li><strong>IPC</strong> &mdash; Binder communication between processes</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Security Perspective</h4>
+<ul>
+<li>Kernel has unrestricted access to CPU, memory, hardware, storage</li>
+<li>If compromised, attacker gains control of entire device</li>
+<li>Kernel vulnerabilities can lead to: privilege escalation, root access, sandbox escape</li>
+<li>Key pentester questions: Kernel version? Known CVEs? Vendor drivers outdated? SELinux enforcing?</li>
+</ul>
+</div>
+</div>
+
+<div class="sim ai">
+<div class="sim-title"><span class="icon">&#128241;</span> Simulation: Opening Google Maps (Kernel Flow)</div>
+<div class="sim-steps" id="sim-maps">
+<div class="sim-step active"><div class="num">1</div><div class="txt"><strong>User Opens Maps:</strong> <span>Application starts. Framework and ART prepare the process.</span></div></div>
+<div class="sim-step"><div class="num">2</div><div class="txt"><strong>Maps Application:</strong> <span>Requests location data. Calls Android Location Manager.</span></div></div>
+<div class="sim-step"><div class="num">3</div><div class="txt"><strong>Framework &rarr; ART &rarr; Native &rarr; HAL:</strong> <span>Request flows down through each layer.</span></div></div>
+<div class="sim-step"><div class="num">4</div><div class="txt"><strong>Linux Kernel:</strong> <span>Communicates with GPS driver. Allocates memory, controls device I/O.</span></div></div>
+<div class="sim-step"><div class="num">5</div><div class="txt"><strong>GPS Hardware:</strong> <span>GPS chip provides location data. Response travels back up through all layers.</span></div></div>
+</div>
+<div class="sim-controls">
+<button class="sim-btn" onclick="simPrev('sim-maps')">&larr; Prev</button>
+<button class="sim-btn" onclick="simNext('sim-maps')">Next &rarr;</button>
+<button class="sim-btn" onclick="simReset('sim-maps')">Reset</button>
+</div>
+</div>
+
+<div class="pent ai">
+<div class="pent-title">&#9889; Pentester's Perspective &mdash; Linux Kernel</div>
+<ul>
+<li><strong>Which kernel version?</strong> Check <code>/proc/version</code> or <code>uname -r</code></li>
+<li><strong>Known CVEs?</strong> Search vulnerability databases for unpatched exploits</li>
+<li><strong>Vendor drivers?</strong> Qualcomm, MediaTek, Samsung drivers are common targets</li>
+<li><strong>SELinux enforcing?</strong> Check <code>getenforce</code></li>
+<li><strong>Debug interfaces?</strong> Check for ADB root, JDWP debugging</li>
+</ul>
+</div>
+
+<!-- 3.2.2 HAL -->
+<h3 class="ai" id="layer-hal">3.2.2 &mdash; Hardware Abstraction Layer (HAL)</h3>
+<p class="ai">HAL acts as a translator between Android Framework and hardware-specific drivers. It enables the same Camera app to work on Samsung, Pixel, Xiaomi, and OnePlus &mdash; each with different camera sensors.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128268;</div>
+<h4>Why HAL Exists</h4>
+<ul>
+<li>Different phones have different camera sensors, fingerprint chips, Wi-Fi chips</li>
+<li>Without HAL, the Framework would need separate code for every manufacturer</li>
+<li>HAL hides hardware differences from Android applications</li>
+<li>Applications never need to know which hardware is installed</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128295;</div>
+<h4>HAL Modules</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>HAL Module</th><th>Hardware</th></tr></thead>
+<tbody>
+<tr><td>Camera HAL</td><td>Camera Sensor</td></tr>
+<tr><td>Audio HAL</td><td>Speaker &amp; Microphone</td></tr>
+<tr><td>Bluetooth HAL</td><td>Bluetooth Chip</td></tr>
+<tr><td>Wi-Fi HAL</td><td>Wireless Adapter</td></tr>
+<tr><td>GPS HAL</td><td>Location Hardware</td></tr>
+<tr><td>Fingerprint HAL</td><td>Biometric Sensor</td></tr>
+<tr><td>Sensors HAL</td><td>Accelerometer, Gyroscope</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="fc ai">
+<div class="fc-title">HAL Communication Flow</div>
+<div class="fc-row"><div class="fc-box highlight">Camera Application</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Camera API (Framework)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow">Camera HAL</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Camera Driver (Linux Kernel)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Camera Sensor</div></div>
+</div>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128295;</div>
+<h4>Project Treble</h4>
+<ul>
+<li>Introduced in Android 8.0</li>
+<li>Standardized interface between Framework and HAL</li>
+<li>Uses HIDL (Hardware Interface Definition Language)</li>
+<li>Newer HALs migrating to AIDL</li>
+<li>Faster Android updates, easier maintenance</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Security Concerns</h4>
+<ul>
+<li>HAL is highly privileged &mdash; has access to hardware</li>
+<li>Camera HAL, Fingerprint HAL, Bluetooth HAL = high-value targets</li>
+<li>Vulnerable HAL can lead to privilege escalation</li>
+<li>HAL vulnerabilities often affect multiple devices on same hardware platform</li>
+</ul>
+</div>
+</div>
+
+<div class="pent ai">
+<div class="pent-title">&#9889; Pentester's Perspective &mdash; HAL</div>
+<ul>
+<li><strong>Is HAL outdated?</strong> Check vendor security patch levels</li>
+<li><strong>Known vulnerabilities?</strong> Camera, Bluetooth, Wi-Fi HALs historically have issues</li>
+<li><strong>Input validation?</strong> Can malformed input crash privileged services?</li>
+<li><strong>IPC abuse?</strong> Can HAL interfaces be called from untrusted apps?</li>
+</ul>
+</div>
+
+<!-- 3.2.3 Native Libraries -->
+<h3 class="ai" id="layer-native">3.2.3 &mdash; Native Libraries</h3>
+<p class="ai">Native Libraries are precompiled C/C++ components providing high-performance functionality. Tasks like video decoding, image rendering, cryptography, and database management require native code for performance.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128230;</div>
+<h4>Key Native Libraries</h4>
+<ul>
+<li><strong>Bionic libc</strong> &mdash; Android's C library (not glibc). Smaller, faster, mobile-optimized</li>
+<li><strong>SQLite</strong> &mdash; Local database storage. WhatsApp, Telegram, Banking apps use it</li>
+<li><strong>BoringSSL</strong> &mdash; TLS/SSL, encryption, certificate validation</li>
+<li><strong>Skia</strong> &mdash; Graphics rendering library for UI elements</li>
+<li><strong>Media Framework</strong> &mdash; Audio/video playback, recording, encoding</li>
+<li><strong>SurfaceFlinger</strong> &mdash; Display compositor combining app windows</li>
+<li><strong>OpenGL ES / Vulkan</strong> &mdash; GPU graphics rendering for games</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Security Risks</h4>
+<ul>
+<li>C/C++ allow manual memory management</li>
+<li>Common vulnerabilities: Buffer Overflow, Heap Overflow, Use-After-Free, Double Free</li>
+<li>Native code executes close to OS &mdash; attractive attack target</li>
+<li>Reverse engineering: Ghidra, IDA Pro, Radare2 for .so analysis</li>
+</ul>
+</div>
+</div>
+
+<div class="fc ai">
+<div class="fc-title">JNI Bridge: Java &harr; Native</div>
+<div class="fc-row"><div class="fc-box highlight">Java/Kotlin Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">JNI (Java Native Interface)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Native Library (.so)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Linux Kernel</div></div>
+</div>
+
+<div class="box box-blue ai">
+<div class="box-title">&#127919; APK Structure</div>
+<p>Native libraries are stored in <code>lib/</code> inside APKs: <code>lib/arm64-v8a/libnative.so</code>. The <code>.so</code> files are shared object libraries equivalent to Linux shared libraries.</p>
+</div>
+
+<!-- 3.2.4 ART -->
+<h3 class="ai" id="layer-art">3.2.4 &mdash; Android Runtime (ART)</h3>
+<p class="ai">ART executes Android application code. The CPU cannot execute Java/Kotlin code directly &mdash; ART converts application bytecode into machine instructions the processor understands.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128260;</div>
+<h4>ART Responsibilities</h4>
+<ul>
+<li><strong>Code Execution</strong> &mdash; Runs application bytecode</li>
+<li><strong>Memory Management</strong> &mdash; Allocates and frees memory</li>
+<li><strong>Garbage Collection</strong> &mdash; Removes unused objects</li>
+<li><strong>Thread Management</strong> &mdash; Executes multiple tasks efficiently</li>
+<li><strong>Optimization</strong> &mdash; JIT, AOT, and Profile-Guided Optimization</li>
+<li><strong>Verification</strong> &mdash; Bytecode and class validation</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Security Features</h4>
+<ul>
+<li>Application isolation via separate processes</li>
+<li>Managed memory prevents many corruption bugs</li>
+<li>Runtime verification of bytecode</li>
+<li>Class loading validation</li>
+<li>Frida, Xposed, LSPosed interact directly with ART</li>
+</ul>
+</div>
+</div>
+
+<div class="sim ai">
+<div class="sim-title"><span class="icon">&#128260;</span> Simulation: APK Execution Flow</div>
+<div class="sim-steps" id="sim-apk">
+<div class="sim-step active"><div class="num">1</div><div class="txt"><strong>User Opens App:</strong> <span>APK is loaded. classes.dex is extracted.</span></div></div>
+<div class="sim-step"><div class="num">2</div><div class="txt"><strong>DEX Bytecode:</strong> <span>ART reads the DEX file containing compiled application code.</span></div></div>
+<div class="sim-step"><div class="num">3</div><div class="txt"><strong>ART Processing:</strong> <span>AOT compiles frequently used code. JIT optimizes during execution. PGO learns usage patterns.</span></div></div>
+<div class="sim-step"><div class="num">4</div><div class="txt"><strong>Machine Code:</strong> <span>ART produces native machine instructions for the CPU.</span></div></div>
+<div class="sim-step"><div class="num">5</div><div class="txt"><strong>CPU Executes:</strong> <span>Linux Kernel schedules the process. CPU executes the compiled instructions.</span></div></div>
+<div class="sim-step"><div class="num">6</div><div class="txt"><strong>Application Runs:</strong> <span>UI rendered, buttons respond, app is fully functional.</span></div></div>
+</div>
+<div class="sim-controls">
+<button class="sim-btn" onclick="simPrev('sim-apk')">&larr; Prev</button>
+<button class="sim-btn" onclick="simNext('sim-apk')">Next &rarr;</button>
+<button class="sim-btn" onclick="simReset('sim-apk')">Reset</button>
+</div>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 3.3: RUNTIME DEEP DIVE -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="runtime">
+<div class="section-label ai">&#128260; Section 3.3</div>
+<h2 class="ai">Runtime <span class="grad">Deep Dive</span></h2>
+<p class="ai">Understanding the evolution from JVM to Dalvik to ART, and how DEX files, garbage collection, and runtime security work together.</p>
+
+<!-- 3.3.1 Runtime Environment -->
+<h3 class="ai" id="runtime-env">3.3.1 &mdash; What is a Runtime Environment?</h3>
+<p class="ai">A Runtime Environment is a software layer that provides everything required for a program to execute. CPUs cannot execute Java/Kotlin directly &mdash; they only understand machine code. The Runtime bridges this gap.</p>
+
+<div class="fc ai">
+<div class="fc-title">Program Execution Flow</div>
+<div class="fc-row"><div class="fc-box highlight">Source Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Compiler</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Intermediate Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Runtime Environment</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Machine Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">CPU</div></div>
+</div>
+
+<div class="compare ai">
+<div class="compare-card">
+<h5>Compiler (Before Execution)</h5>
+<ul>
+<li>Converts source code to intermediate format</li>
+<li>Works at build time</li>
+<li>Produces .class or .dex files</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>Runtime (During Execution)</h5>
+<ul>
+<li>Loads application classes</li>
+<li>Executes code</li>
+<li>Manages memory and threads</li>
+<li>Performs garbage collection</li>
+<li>Optimizes performance</li>
+</ul>
+</div>
+</div>
+
+<!-- 3.3.2 JVM -->
+<h3 class="ai" id="jvm">3.3.2 &mdash; Java Virtual Machine (JVM)</h3>
+<p class="ai">The JVM is a software-based execution environment for Java programs. It enables "Write Once, Run Anywhere" by translating bytecode into platform-specific machine code.</p>
+
+<div class="fc ai">
+<div class="fc-title">Java Compilation and Execution</div>
+<div class="fc-row"><div class="fc-box highlight">Java Source Code (.java)</div></div>
+<div class="fc-arrow-down">&darr; javac compiler</div>
+<div class="fc-row"><div class="fc-box purple">Bytecode (.class)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">JVM (Class Loader &rarr; Bytecode Verifier &rarr; Execution Engine)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Machine Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">CPU</div></div>
+</div>
+
+<div class="grid3 ai">
+<div class="card">
+<div class="icon">&#128220;</div>
+<h4>Class Loader</h4>
+<p>Loads .class files into memory. Resolves dependencies. Prepares classes for execution.</p>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Bytecode Verifier</h4>
+<p>Validates bytecode before execution. Checks for invalid instructions, illegal memory access, corrupted bytecode.</p>
+</div>
+<div class="card">
+<div class="icon">&#9881;&#65039;</div>
+<h4>Execution Engine</h4>
+<p>Converts bytecode into machine instructions. Uses Interpretation and JIT compilation.</p>
+</div>
+</div>
+
+<div class="box box-yellow ai">
+<div class="box-title">&#9888;&#65039; Why Android Couldn't Use JVM</div>
+<p>Early smartphones had 128-256MB RAM, slow CPUs, limited battery. JVM was designed for desktops/servers with higher memory usage, larger runtime, slower startup. Google needed something lighter for mobile.</p>
+</div>
+
+<!-- 3.3.3 Dalvik -->
+<h3 class="ai" id="dalvik">3.3.3 &mdash; Dalvik Virtual Machine (DVM)</h3>
+<p class="ai">Dalvik was Android's original runtime, designed specifically for mobile devices with limited resources. It executes DEX files instead of Java .class files, using a register-based architecture for better efficiency.</p>
+
+<div class="fc ai">
+<div class="fc-title">Android Compilation Flow (Dalvik Era)</div>
+<div class="fc-row"><div class="fc-box highlight">Java Source Code (.java)</div></div>
+<div class="fc-arrow-down">&darr; javac</div>
+<div class="fc-row"><div class="fc-box purple">Java Bytecode (.class)</div></div>
+<div class="fc-arrow-down">&darr; DX/D8 Compiler</div>
+<div class="fc-row"><div class="fc-box green">classes.dex</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">Dalvik Virtual Machine</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Machine Code &rarr; CPU</div></div>
+</div>
+
+<div class="compare ai">
+<div class="compare-card">
+<h5>JVM (Desktop Java)</h5>
+<ul>
+<li>Stack-based architecture</li>
+<li>Uses .class files</li>
+<li>Higher memory usage</li>
+<li>Designed for powerful systems</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>Dalvik (Android)</h5>
+<ul>
+<li>Register-based architecture</li>
+<li>Uses .dex files (merged classes)</li>
+<li>Optimized for low memory</li>
+<li>Designed for mobile devices</li>
+</ul>
+</div>
+</div>
+
+<div class="box box-blue ai">
+<div class="box-title">&#127919; DEX File Efficiency</div>
+<p>500 Java classes in JVM = 500 separate .class files. In Dalvik: 500 classes merged into ONE classes.dex. Reduces duplication, storage, memory, and loading time.</p>
+</div>
+
+<!-- 3.3.4 ART Deep Dive -->
+<h3 class="ai" id="art-deep">3.3.4 &mdash; ART &mdash; Deep Dive</h3>
+<p class="ai">ART replaced Dalvik starting with Android 5.0. It uses AOT (Ahead-of-Time), JIT (Just-in-Time), and Profile-Guided Optimization together for faster startup and better performance.</p>
+
+<div class="grid3 ai">
+<div class="card">
+<div class="icon">&#9889;</div>
+<h4>AOT Compilation</h4>
+<p>Compiles bytecode into machine code BEFORE execution. Application starts faster. Code is ready immediately when opened.</p>
+</div>
+<div class="card">
+<div class="icon">&#128260;</div>
+<h4>JIT Compilation</h4>
+<p>Compiles frequently used methods DURING execution. Optimizes hot paths dynamically. Avoids compiling unused code.</p>
+</div>
+<div class="card">
+<div class="icon">&#128200;</div>
+<h4>Profile-Guided Optimization</h4>
+<p>Monitors user behavior. Records frequently used methods and classes. Prioritizes optimization for commonly used code paths.</p>
+</div>
+</div>
+
+<div class="compare ai">
+<div class="compare-card">
+<h5>Dalvik</h5>
+<ul>
+<li>Mostly JIT compilation</li>
+<li>Slower startup</li>
+<li>Higher runtime overhead</li>
+<li>Default: Android 1.0-4.4</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>ART</h5>
+<ul>
+<li>AOT + JIT + PGO combined</li>
+<li>Faster startup</li>
+<li>Better optimization</li>
+<li>Default: Android 5.0+</li>
+</ul>
+</div>
+</div>
+
+<!-- 3.3.5 DEX Files -->
+<h3 class="ai" id="dex">3.3.5 &mdash; DEX Files (Dalvik Executable)</h3>
+<p class="ai">DEX files contain the compiled executable bytecode of Android applications. Every APK contains at least one classes.dex file. Large apps use MultiDEX to overcome the 64K method limit.</p>
+
+<div class="fc ai">
+<div class="fc-title">Complete Compilation Pipeline</div>
+<div class="fc-row"><div class="fc-box highlight">Developer Writes Java/Kotlin</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Compiler &rarr; .class Files</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">D8/R8 Compiler &rarr; classes.dex</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">APK Package</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow">ART Loads DEX &rarr; Machine Code</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">CPU Executes</div></div>
+</div>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128230;</div>
+<h4>APK Structure</h4>
+<ul>
+<li><code>AndroidManifest.xml</code> &mdash; App configuration</li>
+<li><code>classes.dex</code> &mdash; Executable bytecode</li>
+<li><code>resources.arsc</code> &mdash; Compiled resources</li>
+<li><code>res/</code> &mdash; Resource files</li>
+<li><code>lib/</code> &mdash; Native libraries (.so)</li>
+<li><code>META-INF/</code> &mdash; Signing information</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128269;</div>
+<h4>Reverse Engineering Tools</h4>
+<ul>
+<li><strong>JADX</strong> &mdash; Decompile DEX into Java-like source</li>
+<li><strong>APKTool</strong> &mdash; Decode APK and generate Smali</li>
+<li><strong>Baksmali</strong> &mdash; Convert DEX to Smali</li>
+<li><strong>dex2jar</strong> &mdash; Convert DEX to JAR</li>
+<li><strong>Ghidra</strong> &mdash; Analyze native libraries</li>
+</ul>
+</div>
+</div>
+
+<div class="box box-purple ai">
+<div class="box-title">&#128214; What is Smali?</div>
+<p>Smali is the human-readable representation of DEX bytecode &mdash; Android's assembly language. When JADX cannot fully reconstruct Java source, researchers inspect Smali code to understand application logic, authentication checks, and security routines.</p>
+</div>
+
+<!-- 3.3.6 Garbage Collection -->
+<h3 class="ai" id="gc">3.3.6 &mdash; Garbage Collection &amp; Memory Management</h3>
+<p class="ai">Android applications use Stack and Heap memory. ART automatically manages memory for Java/Kotlin objects. Garbage Collection removes unreachable objects from the Heap.</p>
+
+<div class="compare ai">
+<div class="compare-card">
+<h5>Stack Memory</h5>
+<ul>
+<li>Stores local variables and method calls</li>
+<li>Automatically cleaned when method exits</li>
+<li>Very fast access</li>
+<li>Small size</li>
+<li>One per thread</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>Heap Memory</h5>
+<ul>
+<li>Stores objects and arrays</li>
+<li>Uses Garbage Collection to clean</li>
+<li>Larger memory area</li>
+<li>Shared within process</li>
+<li>Objects remain until unreferenced</li>
+</ul>
+</div>
+</div>
+
+<div class="sim ai">
+<div class="sim-title"><span class="icon">&#128465;&#65039;</span> Simulation: Object Lifecycle &amp; Garbage Collection</div>
+<div class="sim-steps" id="sim-gc">
+<div class="sim-step active"><div class="num">1</div><div class="txt"><strong>Object Created:</strong> <span><code>User user = new User();</code> &mdash; Memory allocated on Heap. Reference stored on Stack.</span></div></div>
+<div class="sim-step"><div class="num">2</div><div class="txt"><strong>Object Used:</strong> <span>Application actively uses the User object. It's reachable and stays in memory.</span></div></div>
+<div class="sim-step"><div class="num">3</div><div class="txt"><strong>Reference Removed:</strong> <span><code>user = null;</code> &mdash; No variable points to the object. It becomes unreachable.</span></div></div>
+<div class="sim-step"><div class="num">4</div><div class="txt"><strong>GC Detects:</strong> <span>Garbage Collector identifies unreachable objects during its sweep cycle.</span></div></div>
+<div class="sim-step"><div class="num">5</div><div class="txt"><strong>Memory Freed:</strong> <span>Object removed from Heap. Memory becomes available for new objects.</span></div></div>
+</div>
+<div class="sim-controls">
+<button class="sim-btn" onclick="simPrev('sim-gc')">&larr; Prev</button>
+<button class="sim-btn" onclick="simNext('sim-gc')">Next &rarr;</button>
+<button class="sim-btn" onclick="simReset('sim-gc')">Reset</button>
+</div>
+</div>
+
+<div class="box box-red ai">
+<div class="box-title">&#9888;&#65039; Memory Leaks</div>
+<p>A Memory Leak occurs when an application holds references to objects no longer needed. Because references still exist, GC cannot remove them. Consequences: increased RAM usage, slower apps, battery drain, crashes. Common in Activities that retain large objects after the screen is destroyed.</p>
+</div>
+
+<!-- 3.3.7 Runtime Security & Hooking -->
+<h3 class="ai" id="runtime-security">3.3.7 &mdash; Runtime Security &amp; Hooking</h3>
+<p class="ai">ART performs verification and security checks before and during execution. Tools like Frida and Xposed interact with ART to observe or modify application behavior at runtime.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Runtime Security Mechanisms</h4>
+<ul>
+<li><strong>Class Loading</strong> &mdash; Loads only needed classes (lazy loading)</li>
+<li><strong>Bytecode Verification</strong> &mdash; Validates DEX bytecode structure</li>
+<li><strong>Runtime Verification</strong> &mdash; Continuous checks during execution</li>
+<li><strong>Managed Execution</strong> &mdash; ART controls memory, threads, objects</li>
+<li><strong>Runtime Isolation</strong> &mdash; Each app runs in separate ART process</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128269;</div>
+<h4>Runtime Hooking</h4>
+<ul>
+<li><strong>Frida</strong> &mdash; Dynamic runtime instrumentation</li>
+<li><strong>Xposed/LSPosed</strong> &mdash; Runtime module framework</li>
+<li>Hook methods to observe, log, modify, or replace behavior</li>
+<li>Used for: bypass root detection, disable SSL pinning, inspect values</li>
+<li>Modifies behavior during execution, NOT the APK file</li>
+</ul>
+</div>
+</div>
+
+<div class="fc ai">
+<div class="fc-title">Static vs Dynamic Analysis</div>
+<div class="fc-row">
+<div class="fc-box green">Static Analysis<br><small>APK not running<br>Read code<br>Inspect DEX<br>Find potential issues</small></div>
+<div class="fc-box" style="border-color:var(--pink)">Dynamic Analysis<br><small>App running<br>Observe execution<br>Inspect runtime behavior<br>Validate real behavior</small></div>
+</div>
+</div>
+
+<div class="pent ai">
+<div class="pent-title">&#9889; Pentester's Perspective &mdash; Runtime</div>
+<ul>
+<li><strong>Which methods execute?</strong> Hook with Frida to trace method calls</li>
+<li><strong>Where are security checks?</strong> Monitor authentication logic at runtime</li>
+<li><strong>Can SSL pinning be bypassed?</strong> Use Frida to disable certificate validation</li>
+<li><strong>What values are returned?</strong> Inspect runtime variables and return values</li>
+<li><strong>Anti-hooking?</strong> Applications may detect Frida/Xposed and refuse to run</li>
+</ul>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 3.4: BINDER IPC -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="binder">
+<div class="section-label ai">&#128279; Section 3.4</div>
+<h2 class="ai">Binder <span class="grad">IPC</span></h2>
+<p class="ai">Android applications run in separate processes with sandboxing. Binder IPC is Android's primary mechanism for secure communication between isolated processes and system services.</p>
+
+<!-- 3.4.1 Why IPC -->
+<h3 class="ai" id="ipc-why">3.4.1 &mdash; Why IPC is Needed</h3>
+<p class="ai">Every Android app runs in its own process with unique UID, separate memory, and private filesystem. Yet apps need to communicate with system services (GPS, Camera, Audio). IPC enables this securely.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128279;</div>
+<h4>The Problem</h4>
+<ul>
+<li>Google Maps needs GPS &mdash; but can't access hardware directly</li>
+<li>Spotify needs Audio &mdash; but can't control speaker directly</li>
+<li>Camera App needs Camera &mdash; but can't access sensor directly</li>
+<li>Every app is isolated &mdash; how do they communicate?</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>The Solution: IPC</h4>
+<ul>
+<li>Applications use system services via controlled IPC</li>
+<li>Permission checks enforced at every step</li>
+<li>Process identity verified (UID/PID)</li>
+<li>Communication happens without violating sandbox</li>
+</ul>
+</div>
+</div>
+
+<div class="fc ai">
+<div class="fc-title">System Services (IPC Examples)</div>
+<div class="fc-row">
+<div class="fc-box highlight">Camera App</div>
+<div class="fc-box purple">Google Maps</div>
+<div class="fc-box green">Spotify</div>
+<div class="fc-box">Settings</div>
+</div>
+<div class="fc-arrow-down">&darr; All use IPC</div>
+<div class="fc-row">
+<div class="fc-box">Camera Service</div>
+<div class="fc-box">Location Service</div>
+<div class="fc-box">Audio Service</div>
+<div class="fc-box">Bluetooth Service</div>
+</div>
+</div>
+
+<!-- 3.4.2 What is Binder -->
+<h3 class="ai" id="binder-what">3.4.2 &mdash; What is Binder?</h3>
+<p class="ai">Binder is Android's primary IPC mechanism. It allows different processes to communicate securely, efficiently, and in a controlled manner using a client-server architecture.</p>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128279;</div>
+<h4>Why Binder Was Created</h4>
+<ul>
+<li>Traditional IPC (pipes, sockets) not designed for mobile</li>
+<li>Binder provides: high performance, low memory, permission enforcement, process identity, object-oriented communication</li>
+<li>Deep integration with Android Framework</li>
+<li>Optimized for mobile battery and CPU constraints</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128230;</div>
+<h4>Where Binder is Used</h4>
+<ul>
+<li>Camera App &rarr; Camera Service</li>
+<li>Google Maps &rarr; Location Service</li>
+<li>Settings &rarr; Wi-Fi Service</li>
+<li>Spotify &rarr; Audio Service</li>
+<li>Play Store &rarr; Package Manager</li>
+<li>Almost every app interaction involves Binder</li>
+</ul>
+</div>
+</div>
+
+<div class="compare ai">
+<div class="compare-card">
+<h5>Traditional IPC</h5>
+<ul>
+<li>General-purpose</li>
+<li>Limited process identity</li>
+<li>Basic message passing</li>
+<li>Manual security</li>
+</ul>
+</div>
+<div class="compare-card">
+<h5>Binder</h5>
+<ul>
+<li>Designed for Android</li>
+<li>Tracks caller UID/PID</li>
+<li>Object-oriented communication</li>
+<li>Integrated permission checks</li>
+</ul>
+</div>
+</div>
+
+<!-- 3.4.3 Binder Architecture -->
+<h3 class="ai" id="binder-arch">3.4.3 &mdash; Binder Architecture</h3>
+<p class="ai">Binder follows a Client-Server architecture with six major components: Client, Proxy, Binder Driver, Stub, System Service, and Response.</p>
+
+<div class="fc ai">
+<div class="fc-title">Binder Architecture</div>
+<div class="fc-row"><div class="fc-box highlight">Application (Client)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Binder Proxy</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Binder Driver (Linux Kernel)</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Binder Stub</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box">System Service (Server)</div></div>
+</div>
+
+<div class="grid3 ai">
+<div class="card">
+<div class="icon">&#128241;</div>
+<h4>Client</h4>
+<p>The app requesting a service. Sends parameters and waits for response. Example: Camera App requesting "Take Photo".</p>
+</div>
+<div class="card">
+<div class="icon">&#128279;</div>
+<h4>Proxy</h4>
+<p>Exists inside client process. Makes remote service appear local. Converts method calls into Binder transactions.</p>
+</div>
+<div class="card">
+<div class="icon">&#128225;</div>
+<h4>Binder Driver</h4>
+<p>In Linux Kernel. Transports messages between processes. Tracks caller identity. The "post office" of Android IPC.</p>
+</div>
+</div>
+<div class="grid3 ai">
+<div class="card">
+<div class="icon">&#128230;</div>
+<h4>Stub</h4>
+<p>Exists inside server process. Receives Binder transactions and converts them back into method calls.</p>
+</div>
+<div class="card">
+<div class="icon">&#9881;&#65039;</div>
+<h4>System Service</h4>
+<p>Performs the actual work. Camera Service, Location Service, Audio Service, etc.</p>
+</div>
+<div class="card">
+<div class="icon">&#128257;</div>
+<h4>Response</h4>
+<p>Result travels back: Service &rarr; Stub &rarr; Driver &rarr; Proxy &rarr; Application.</p>
+</div>
+</div>
+
+<!-- 3.4.4 Service Manager & Flow -->
+<h3 class="ai" id="binder-flow">3.4.4 &mdash; Communication Flow &amp; Service Manager</h3>
+<p class="ai">The Service Manager is Android's central registry for Binder services. Applications discover services through it, like a phonebook for system services.</p>
+
+<div class="sim ai">
+<div class="sim-title"><span class="icon">&#128225;</span> Simulation: Complete Binder Transaction</div>
+<div class="sim-steps" id="sim-binder">
+<div class="sim-step active"><div class="num">1</div><div class="txt"><strong>Service Registration:</strong> <span>During boot, every system service (Camera, Audio, Location) registers with the Service Manager.</span></div></div>
+<div class="sim-step"><div class="num">2</div><div class="txt"><strong>Service Discovery:</strong> <span>Camera App asks Service Manager for Camera Service. Service Manager returns a Binder handle.</span></div></div>
+<div class="sim-step"><div class="num">3</div><div class="txt"><strong>Proxy Packages:</strong> <span>Proxy converts method call into a Binder transaction. Packages parameters.</span></div></div>
+<div class="sim-step"><div class="num">4</div><div class="txt"><strong>Driver Transfers:</strong> <span>Binder Driver in kernel securely moves data between processes. Tracks caller UID/PID.</span></div></div>
+<div class="sim-step"><div class="num">5</div><div class="txt"><strong>Stub Receives:</strong> <span>Stub unpacks the request, converts back to method call, invokes Camera Service.</span></div></div>
+<div class="sim-step"><div class="num">6</div><div class="txt"><strong>Service Executes:</strong> <span>Camera Service validates permissions, communicates with HAL, captures image.</span></div></div>
+<div class="sim-step"><div class="num">7</div><div class="txt"><strong>Response Returns:</strong> <span>Result travels back: Service &rarr; Stub &rarr; Driver &rarr; Proxy &rarr; App. User sees photo.</span></div></div>
+</div>
+<div class="sim-controls">
+<button class="sim-btn" onclick="simPrev('sim-binder')">&larr; Prev</button>
+<button class="sim-btn" onclick="simNext('sim-binder')">Next &rarr;</button>
+<button class="sim-btn" onclick="simReset('sim-binder')">Reset</button>
+</div>
+</div>
+
+<div class="grid2 ai">
+<div class="card">
+<div class="icon">&#128225;</div>
+<h4>Synchronous vs Asynchronous</h4>
+<ul>
+<li><strong>Synchronous:</strong> App sends request, waits for response (most calls)</li>
+<li><strong>Asynchronous (One-way):</strong> App sends request, continues working (no wait)</li>
+<li><strong>Thread Pool:</strong> Services use thread pools to handle multiple concurrent requests</li>
+</ul>
+</div>
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Binder Security</h4>
+<ul>
+<li><strong>Caller Identity:</strong> Every transaction carries UID/PID</li>
+<li><strong>Permission Enforcement:</strong> Services validate caller permissions</li>
+<li><strong>Process Isolation:</strong> Apps cannot bypass Binder under normal conditions</li>
+<li><strong>Kernel-Mediated:</strong> Driver ensures secure message passing</li>
+</ul>
+</div>
+</div>
+
+<div class="pent ai">
+<div class="pent-title">&#9889; Pentester's Perspective &mdash; Binder</div>
+<ul>
+<li><strong>Which services are exposed?</strong> List all registered Binder services</li>
+<li><strong>Permission checks?</strong> Are permissions correctly enforced?</li>
+<li><strong>Input validation?</strong> Does the service validate incoming data?</li>
+<li><strong>Exported interfaces?</strong> Are there unnecessary exposed interfaces?</li>
+<li><strong>Historical vulnerabilities?</strong> Many Android CVEs involve Binder-exposed services</li>
+</ul>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- SECTION 3.5: SECURITY PERSPECTIVE -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="security">
+<div class="section-label ai">&#128274; Section 3.5</div>
+<h2 class="ai">Architecture from a <span class="grad">Security</span> Perspective</h2>
+<p class="ai">Every layer of Android's architecture introduces both functionality and security responsibilities. As security researchers, we ask: "Where can Android fail?"</p>
+
+<div class="fc ai">
+<div class="fc-title">Attack Surface by Layer</div>
+<div class="fc-row"><div class="fc-box highlight">Applications &mdash; Data storage, auth, exported components</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box purple">Framework &mdash; Intents, permissions, APIs</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box" style="border-color:var(--accent)">ART &mdash; Runtime hooking, bytecode manipulation</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box green">Native Libraries &mdash; Buffer overflow, memory corruption</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box yellow">HAL &mdash; Hardware access vulnerabilities</div></div>
+<div class="fc-arrow-down">&darr;</div>
+<div class="fc-row"><div class="fc-box red">Linux Kernel &mdash; Privilege escalation, driver bugs</div></div>
+</div>
+
+<div class="table-wrap ai">
+<table>
+<thead><tr><th>Layer</th><th>Security Focus</th><th>Example Vulnerabilities</th></tr></thead>
+<tbody>
+<tr><td>Applications</td><td>User data, business logic, storage</td><td>Insecure data storage, hardcoded secrets, weak auth</td></tr>
+<tr><td>Framework</td><td>APIs, permissions, Intents</td><td>Exported components, Intent injection, permission bypass</td></tr>
+<tr><td>ART</td><td>Managed execution, runtime verification</td><td>Runtime manipulation, method hooking, logic bypass</td></tr>
+<tr><td>Native Libraries</td><td>Memory safety</td><td>Buffer overflow, use-after-free, format string</td></tr>
+<tr><td>HAL</td><td>Hardware access</td><td>Camera HAL escalation, Bluetooth HAL remote attack</td></tr>
+<tr><td>Linux Kernel</td><td>Isolation, drivers, low-level security</td><td>Kernel exploits, SELinux bypass, driver vulnerabilities</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 class="ai">Defense in Depth</h3>
+<p class="ai">Android doesn't rely on a single protection. It combines multiple security layers:</p>
+
+<div class="grid3 ai">
+<div class="card">
+<div class="icon">&#128274;</div>
+<h4>Application Sandboxing</h4>
+<p>Each app gets unique UID, separate process, private memory, and filesystem permissions.</p>
+</div>
+<div class="card">
+<div class="icon">&#128737;&#65039;</div>
+<h4>SELinux + Linux Permissions</h4>
+<p>Mandatory access control + traditional Unix permissions provide layered file system security.</p>
+</div>
+<div class="card">
+<div class="icon">&#128275;</div>
+<h4>Verified Boot + APK Signing</h4>
+<p>Ensures system integrity and application authenticity throughout the boot and install process.</p>
+</div>
+</div>
+
+<div class="pent ai">
+<div class="pent-title">&#9889; Think Like a Pentester</div>
+<p>Instead of asking "What does this layer do?", ask:</p>
+<ul>
+<li><strong>What data does this layer handle?</strong></li>
+<li><strong>What assumptions does it make?</strong></li>
+<li><strong>What inputs does it trust?</strong></li>
+<li><strong>What security checks should exist?</strong></li>
+<li><strong>What happens if those checks fail?</strong></li>
+</ul>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- LABS -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section" id="labs">
+<div class="section-label ai">&#128300; Hands-on Labs</div>
+<h2 class="ai">Interactive <span class="grad">Labs</span></h2>
+
+<div class="lab ai">
+<div class="lab-num">Lab 1</div>
+<h4>Trace Camera Request Through Architecture</h4>
+<div class="lab-steps">
+<div class="lab-step">Open ADB shell: <code>adb shell</code></div>
+<div class="lab-step">List camera service: <code>service list | grep camera</code></div>
+<div class="lab-step">Check camera HAL: <code>dumpsys media.camera | head -50</code></div>
+<div class="lab-step">Monitor camera access: <code>logcat -s CameraService</code></div>
+<div class="lab-step">Open Camera app and observe logs flowing through each layer</div>
+</div>
+<div class="lab-tip">&#128161; Note how the request passes from app &rarr; framework &rarr; HAL &rarr; kernel driver &rarr; hardware.</div>
+</div>
+
+<div class="lab ai">
+<div class="lab-num">Lab 2</div>
+<h4>Identify Runtime Layer</h4>
+<div class="lab-steps">
+<div class="lab-step">Check Android runtime: <code>adb shell getprop dalvik.vm.dex2oat-Xms</code></div>
+<div class="lab-step">List ART properties: <code>adb shell getprop | grep dalvik</code></div>
+<div class="lab-step">Check DEX files in APK: Unzip APK, examine classes.dex</div>
+<div class="lab-step">Decompile with jadx and compare Java source to DEX structure</div>
+</div>
+<div class="lab-tip">&#128161; Use <code>jadx -d output/ app.apk</code> to decompile and analyze the DEX bytecode.</div>
+</div>
+
+<div class="lab ai">
+<div class="lab-num">Lab 3</div>
+<h4>HAL Module Investigation</h4>
+<div class="lab-steps">
+<div class="lab-step">List all HAL interfaces: <code>adb shell dumpsys -l | grep -i hal</code></div>
+<div class="lab-step">Check camera HAL: <code>adb shell dumpsys media.camera</code></div>
+<div class="lab-step">Check fingerprint HAL: <code>adb shell dumpsys biometrics</code></div>
+<div class="lab-step">Examine vendor partition: <code>adb shell ls /vendor/lib64/ | head -20</code></div>
+<div class="lab-step">Compare HAL versions across devices if available</div>
+</div>
+<div class="lab-tip">&#128161; HAL implementations vary by manufacturer. Check /vendor/etc/vintf/manifest.xml for HAL interface definitions.</div>
+</div>
+
+<div class="lab ai">
+<div class="lab-num">Lab 4</div>
+<h4>Binder Service Enumeration</h4>
+<div class="lab-steps">
+<div class="lab-step">List all Binder services: <code>adb shell service list</code></div>
+<div class="lab-step">Count total services: <code>adb shell service list | wc -l</code></div>
+<div class="lab-step">Check specific service: <code>adb shell dumpsys activity</code></div>
+<div class="lab-step">Monitor Binder transactions: <code>adb shell cat /sys/kernel/debug/binder/stats</code></div>
+<div class="lab-step">Identify accessible services without root</div>
+</div>
+<div class="lab-tip">&#128161; Not all services are accessible to third-party apps. Permission checks restrict access.</div>
+</div>
+
+<div class="lab ai">
+<div class="lab-num">Lab 5</div>
+<h4>Memory Management Analysis</h4>
+<div class="lab-steps">
+<div class="lab-step">Check memory info: <code>adb shell cat /proc/meminfo | head -10</code></div>
+<div class="lab-step">Monitor app memory: <code>adb shell dumpsys meminfo com.target.app</code></div>
+<div class="lab-step">Check GC activity: <code>adb shell logcat -s art</code></div>
+<div class="lab-step">Observe heap allocation in real-time during app usage</div>
+</div>
+<div class="lab-tip">&#128161; Watch for large heap allocations and frequent GC cycles which may indicate memory leaks.</div>
+</div>
+
+<div class="lab ai">
+<div class="lab-num">Lab 6</div>
+<h4>Architecture Layer Mapping</h4>
+<div class="lab-steps">
+<div class="lab-step">Open any app (e.g., Settings)</div>
+<div class="lab-step">Monitor with logcat: <code>adb logcat | grep -E "ActivityManager|PackageManager"</code></div>
+<div class="lab-step">Observe framework layer calls in real-time</div>
+<div class="lab-step">Check native libraries: <code>adb shell ls /system/lib64/ | head -20</code></div>
+<div class="lab-step">Map observed behavior to architecture layers</div>
+</div>
+<div class="lab-tip">&#128161; Create a personal architecture map showing how YOUR device's components connect.</div>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- QUIZZES -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section">
+<div class="section-label ai">&#129504; Knowledge Check</div>
+<h2 class="ai">Module 3 <span class="grad">Quiz</span></h2>
+
+<div class="quiz ai">
+<h4>Architecture Basics</h4>
+<div class="quiz-q" data-correct="2">
+<p>1. Which layer is the ONLY one that communicates directly with hardware?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Android Framework</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>HAL</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>Linux Kernel</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Native Libraries</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> The Linux Kernel is the only layer that directly communicates with physical hardware. All other layers depend on it.</div>
+</div>
+<div class="quiz-q" data-correct="1">
+<p>2. What is the primary purpose of HAL?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Execute application code</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>Translate generic requests into hardware-specific operations</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>Manage application memory</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Enforce SELinux policies</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> HAL acts as a translator between Android Framework and hardware-specific drivers from different manufacturers.</div>
+</div>
+<div class="quiz-q" data-correct="0">
+<p>3. Why did Google create Dalvik instead of using JVM directly?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>JVM was too heavy for early smartphones with limited RAM and battery</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>JVM couldn't run Java code</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>Google didn't have a license for JVM</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Dalvik was faster on desktops</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> Early smartphones had 128-256MB RAM. JVM was designed for desktops/servers with higher memory usage. Dalvik was optimized for mobile.</div>
+</div>
+</div>
+
+<div class="quiz ai">
+<h4>Runtime &amp; Binder</h4>
+<div class="quiz-q" data-correct="2">
+<p>4. What does ART use to compile code BEFORE execution?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>JIT (Just-in-Time)</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>PGO (Profile-Guided Optimization)</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>AOT (Ahead-of-Time)</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Interpreter</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> AOT compiles bytecode into machine code before execution. JIT compiles during execution. PGO optimizes based on usage patterns.</div>
+</div>
+<div class="quiz-q" data-correct="1">
+<p>5. What is the Service Manager's role in Binder IPC?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Executes system services</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>Central registry that tracks and locates Binder services</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>Transports data between processes</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Enforces permissions on Binder calls</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> Service Manager is the phonebook for Binder services. Applications discover services through it.</div>
+</div>
+<div class="quiz-q" data-correct="3">
+<p>6. What does the Binder Driver reside in?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Android Framework</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>Native Libraries</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>ART Runtime</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Linux Kernel</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> The Binder Driver is implemented inside the Linux Kernel, providing secure message passing between processes.</div>
+</div>
+</div>
+
+<div class="quiz ai">
+<h4>Security &amp; Memory</h4>
+<div class="quiz-q" data-correct="0">
+<p>7. What is a Memory Leak in Android?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Holding references to objects no longer needed, preventing GC</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>A security vulnerability in native code</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>An app crashing due to low RAM</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>A buffer overflow in C code</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> Memory leaks occur when unused objects remain referenced. GC can't free them, leading to increased RAM usage and potential crashes.</div>
+</div>
+<div class="quiz-q" data-correct="2">
+<p>8. What does Frida do in Android security testing?</p>
+<div class="quiz-opts">
+<div class="quiz-opt" data-idx="0"><div class="letter">A</div><span>Decompiles APK files</span></div>
+<div class="quiz-opt" data-idx="1"><div class="letter">B</div><span>Captures network traffic</span></div>
+<div class="quiz-opt" data-idx="2"><div class="letter">C</div><span>Interacts with ART to hook methods and modify runtime behavior</span></div>
+<div class="quiz-opt" data-idx="3"><div class="letter">D</div><span>Scans for malware in APKs</span></div>
+</div>
+<div class="quiz-explain"><strong>Correct!</strong> Frida is a dynamic instrumentation tool that hooks into ART to observe or modify application behavior during execution.</div>
+</div>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- FLASHCARDS -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section">
+<div class="section-label ai">&#128218; Key Terms</div>
+<h2 class="ai">Module 3 <span class="grad">Flashcards</span></h2>
+
+<div class="fc-grid ai">
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>HIDL</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Hardware Interface Definition Language</strong> &mdash; Defines how Framework and HAL communicate. Introduced with Project Treble for standardized HAL interfaces.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>JNI</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Java Native Interface</strong> &mdash; Bridge between Java/Kotlin code and Native C/C++ libraries. Enables apps to call native functions.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>NDK</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Native Development Kit</strong> &mdash; Toolkit allowing developers to write Android components in C/C++. Used for games, multimedia, ML.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>AOT</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Ahead-of-Time Compilation</strong> &mdash; ART compiles DEX bytecode into machine code BEFORE execution. Faster startup, less runtime overhead.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>JIT</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Just-in-Time Compilation</strong> &mdash; Compiles frequently used methods DURING execution. Optimizes hot paths dynamically.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>Smali</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Android's assembly language</strong> &mdash; Human-readable representation of DEX bytecode. Used in reverse engineering when JADX can't fully decompile.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>Binder Proxy</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Client-side representative</strong> &mdash; Exists inside the client process. Converts method calls into Binder transactions for IPC.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>Binder Stub</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Server-side receiver</strong> &mdash; Exists inside the service process. Converts Binder transactions back into method calls.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>Service Manager</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Binder service registry</strong> &mdash; Central phonebook for system services. Applications discover services through it during boot.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>MultiDEX</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Multiple DEX files per APK</strong> &mdash; Overcomes the 64K method limit. Large apps like Instagram use classes.dex, classes2.dex, etc.</p></div></div></div>
+<div class="fcard" onclick="this.classList.toggle('flipped')"><div class="fcard-in"><div class="fcard-f"><h4>PGO</h4><p>Click to reveal</p></div><div class="fcard-b"><p><strong>Profile-Guided Optimization</strong> &mdash; ART monitors user behavior and prioritizes optimization for frequently used code paths.</p></div></div></div>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- FINAL TAKEAWAYS -->
+<!-- ============================================ -->
+<div class="divider"></div>
+<section class="section">
+<div class="takeaway ai">
+<h4>&#127919; Module 3 Complete &mdash; Final Summary</h4>
+<div class="takeaway-grid">
+<div class="takeaway-item"><div class="icon">&#128295;</div><div class="txt"><strong>Layered Architecture</strong><span>Applications, Framework, ART, Native, HAL, Kernel &mdash; each has specific responsibilities.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128039;</div><div class="txt"><strong>Linux Kernel is Foundation</strong><span>Only layer that directly communicates with hardware. Manages processes, memory, security.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128268;</div><div class="txt"><strong>HAL Enables Portability</strong><span>Translates generic requests to hardware-specific operations. Same app works on all devices.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128260;</div><div class="txt"><strong>ART Executes Apps</strong><span>AOT + JIT + PGO optimization. DEX files contain executable bytecode.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128279;</div><div class="txt"><strong>Binder IPC is Essential</strong><span>Secure communication between isolated processes. Client-Proxy-Driver-Stub architecture.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128274;</div><div class="txt"><strong>Defense in Depth</strong><span>Security across every layer: sandboxing, SELinux, Verified Boot, runtime verification.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128270;</div><div class="txt"><strong>Every Layer is an Attack Surface</strong><span>Vulnerabilities can exist at any level &mdash; apps, framework, runtime, native, HAL, kernel.</span></div></div>
+<div class="takeaway-item"><div class="icon">&#128161;</div><div class="txt"><strong>Think Like a Pentester</strong><span>Ask: What data? What assumptions? What inputs? What checks? What if they fail?</span></div></div>
+</div>
+</div>
+
+<div style="text-align:center;margin-top:3rem" class="ai">
+<p style="color:var(--text3);margin-bottom:1rem">Module 3 Complete</p>
+<a href="android-internals.html" class="btn btn-outline">&larr; Back to Module 2</a>
+</div>
+</section>
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================ -->
+<script>
+// Architecture Explorer
+var archData={
+apps:{title:'Applications Layer',content:'<h4>Applications Layer</h4><p>Where users interact. Processes user input, network traffic, files, API requests, authentication, and local storage.</p><h4>Security Focus</h4><ul><li>Insecure data storage</li><li>Weak authentication</li><li>Exported components</li><li>Hardcoded secrets</li><li>Insecure WebView usage</li></ul><h4>Tools</h4><p>JADX, APKTool, MobSF, Frida</p>'},
+framework:{title:'Android Framework',content:'<h4>Android Framework</h4><p>Provides APIs and system services: Camera, Location, Notifications, Package Manager, Activity Manager.</p><h4>Security Focus</h4><ul><li>Misconfigured permissions</li><li>Improper Intent handling</li><li>Unprotected exported components</li><li>Excessive privilege requests</li></ul>'},
+art:{title:'Android Runtime (ART)',content:'<h4>ART</h4><p>Executes Java/Kotlin bytecode. Manages memory, garbage collection, and optimization via AOT + JIT + PGO.</p><h4>Security Focus</h4><ul><li>Bytecode verification</li><li>Runtime isolation</li><li>Frida/Xposed hooking targets this layer</li><li>Dynamic analysis environment</li></ul>'},
+native:{title:'Native Libraries',content:'<h4>Native Libraries (C/C++)</h4><p>High-performance: Bionic, SQLite, BoringSSL, Skia, Media Framework, SurfaceFlinger.</p><h4>Security Risks</h4><ul><li>Buffer Overflow</li><li>Heap Overflow</li><li>Use-After-Free</li><li>Memory Corruption</li></ul><h4>Reverse Engineering</h4><p>Ghidra, IDA Pro, Radare2 for .so analysis</p>'},
+hal:{title:'Hardware Abstraction Layer',content:'<h4>HAL</h4><p>Translates generic Framework requests into hardware-specific operations. Same Camera API works on Samsung, Pixel, Xiaomi.</p><h4>HAL Modules</h4><p>Camera, Audio, Bluetooth, Wi-Fi, GPS, Fingerprint, Sensors</p><h4>Security Focus</h4><ul><li>Vendor-specific vulnerabilities</li><li>Privileged hardware access</li><li>Project Treble standardization</li></ul>'},
+kernel:{title:'Linux Kernel',content:'<h4>Linux Kernel</h4><p>The foundation. Manages processes, memory, drivers, filesystems, networking, security, power, IPC.</p><h4>Security Focus</h4><ul><li>Kernel exploits = root access</li><li>Driver vulnerabilities</li><li>SELinux enforcement</li><li>Process isolation</li></ul><h4>Check</h4><p><code>uname -r</code>, <code>/proc/version</code>, <code>getenforce</code></p>'},
+hardware:{title:'Physical Hardware',content:'<h4>Hardware</h4><p>Physical components: CPU, RAM, Storage, Camera sensors, GPS chip, Bluetooth chip, Wi-Fi adapter, Fingerprint sensor.</p><p>Only the Linux Kernel communicates directly with hardware through device drivers.</p>'}
+};
+function showArchLayer(id){
+var d=archData[id];if(!d)return;
+var el=document.getElementById('arch-detail');
+el.style.display='block';
+document.getElementById('arch-detail-content').innerHTML=d.content;
+el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// Simulation navigation
+function simNext(id){var c=document.getElementById(id);if(!c)return;var s=c.querySelectorAll('.sim-step');var a=-1;s.forEach(function(x,i){if(x.classList.contains('active'))a=i});s.forEach(function(x){x.classList.remove('active')});var n=(a+1)%s.length;s[n].classList.add('active')}
+function simPrev(id){var c=document.getElementById(id);if(!c)return;var s=c.querySelectorAll('.sim-step');var a=-1;s.forEach(function(x,i){if(x.classList.contains('active'))a=i});s.forEach(function(x){x.classList.remove('active')});var n=(a-1+s.length)%s.length;s[n].classList.add('active')}
+function simReset(id){var c=document.getElementById(id);if(!c)return;var s=c.querySelectorAll('.sim-step');s.forEach(function(x){x.classList.remove('active')});if(s[0])s[0].classList.add('active')}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+var group=this.getAttribute('data-tab-group');
+var tab=this.getAttribute('data-tab');
+var parent=this.closest('.section')||document;
+parent.querySelectorAll('.tab-btn[data-tab-group="'+group+'"]').forEach(function(b){b.classList.remove('active')});
+this.classList.add('active');
+parent.querySelectorAll('.tab-content[data-tab]').forEach(function(tc){
+var keys=tc.getAttribute('data-tab').split(',');
+if(keys.indexOf(tab)!==-1||tc.getAttribute('data-tab')===tab){tc.classList.add('active')}else{tc.classList.remove('active')}
+});
+});
+});
+
+// Quiz functionality
+document.querySelectorAll('.quiz-q').forEach(function(q){
+var correct=parseInt(q.getAttribute('data-correct'));
+var opts=q.querySelectorAll('.quiz-opt');
+var explain=q.querySelector('.quiz-explain');
+var answered=false;
+opts.forEach(function(opt){
+opt.addEventListener('click',function(){
+if(answered)return;answered=true;
+var idx=parseInt(this.getAttribute('data-idx'));
+opts.forEach(function(o){o.classList.remove('correct','wrong')});
+if(idx===correct){this.classList.add('correct');if(explain)explain.classList.add('show')}
+else{this.classList.add('wrong');opts[correct].classList.add('correct');if(explain)explain.classList.add('show')}
+});
+});
+});
+
+// Animate elements on scroll
+function checkVisible(){document.querySelectorAll('.ai').forEach(function(el){var rect=el.getBoundingClientRect();if(rect.top<window.innerHeight*0.92)el.classList.add('vis')})}
+window.addEventListener('scroll',checkVisible);
+window.addEventListener('resize',checkVisible);
+document.addEventListener('DOMContentLoaded',function(){checkVisible();setTimeout(checkVisible,500);setTimeout(checkVisible,1500)});
+window.addEventListener('load',function(){checkVisible();setTimeout(checkVisible,1000)});
+</script>
+<noscript><style>.ai{opacity:1!important;transform:none!important}</style></noscript>
+</body>
+</html>
